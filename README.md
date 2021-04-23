@@ -22,6 +22,14 @@ Update `chunkify.sh`
 Update `build_index.sh`
 - Set the `index` variable to the same as in `chunkify.sh` in the step above
 
+Build the index
+
+`build_index.sh`
+
+Upload the wiki-dump to elasticsearch
+
+`chunkify.sh`
+
 Run the docker images
 - `docker-compose up` (with output)
 - `docker-compose up -d` (detached)
