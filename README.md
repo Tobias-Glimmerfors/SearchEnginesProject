@@ -22,6 +22,10 @@ Update `chunkify.sh`
 Update `build_index.sh`
 - Set the `index` variable to the same as in `chunkify.sh` in the step above
 
+Run the docker images. This launches **elasticsearch** on localhost:9200 and **kibana** on localhost:5601.
+- `docker-compose up` (with output)
+- `docker-compose up -d` (detached)
+
 Build the index
 
 `build_index.sh`
@@ -29,12 +33,6 @@ Build the index
 Upload the wiki-dump to elasticsearch
 
 `chunkify.sh`
-
-Run the docker images
-- `docker-compose up` (with output)
-- `docker-compose up -d` (detached)
-
-This launches **elasticsearch** on localhost:9200 and **kibana** on localhost:5601.
 
 **Note:** Elasticsearch is configured to store data persistently in `{root}/elasticdata`, i.e., the docker containers can be closed and restarted without loss of data.
 
