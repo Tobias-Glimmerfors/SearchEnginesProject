@@ -1,3 +1,32 @@
+Examples
+===
+```
+POST /enwikiquote/_search
+{
+  "query": {
+    "more_like_this": {
+      "fields": ["title", "text"],
+      "like": [
+        {"_index": "enwikiquote", "_id": "85102"}
+      ],
+      "min_term_freq": 1,
+      "max_query_terms": 12
+    }
+  },
+  "_source": ["title"]
+}
+
+POST /enwikiquote/_search
+{
+  "query": {
+    "simple_query_string": {
+      "query": "hi Peter~5",
+      "default_operator": "and",
+      "fields": ["title", "text"]
+    }
+  }
+}```
+
 Installation steps
 ====
 
