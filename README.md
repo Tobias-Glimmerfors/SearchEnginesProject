@@ -25,7 +25,8 @@ POST /enwikiquote/_search
       "fields": ["title", "text"]
     }
   }
-}```
+}
+```
 
 Installation steps
 ====
