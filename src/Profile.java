@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Profile {
     private String user;
@@ -23,6 +24,14 @@ public class Profile {
 
     public void addDisfavor(String s) {
         disfavors.add(s);
+    }
+
+    public String favorsString() {
+        return favors.stream().collect(Collectors.joining(" "));
+    }
+
+    public String disfavorsString() {
+        return disfavors.stream().collect(Collectors.joining(" "));
     }
 
     public Iterator<String> favorsIterator() {

@@ -10,6 +10,9 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.SimpleQueryStringBuilder;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.BoostingQueryBuilder;
+import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 
@@ -36,12 +39,27 @@ public class Searcher {
     public PostingsList search(String query) {
         SearchRequest searchRequest = new SearchRequest("enwikiquote"); // create the request object
         
-        SimpleQueryStringBuilder queryBuilder = new SimpleQueryStringBuilder(query); // create a query object
+        // "basic" query
+        SimpleQueryStringBuilder queryBuilder = new SimpleQueryStringBuilder(query);
         queryBuilder.field("title", 1f); // add a field to query with weight
+        queryBuilder.field("text", 1f); // add a field to query with weight
+
+        // combine query with favored categories
+        BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
+        boolQueryBuilder.must(queryBuilder);
+        boolQueryBuilder.should(new MatchQueryBuilder("category", engine.profile.favorsString()));
+
+        // boost the searched and preferred queries while demote disfavored categories
+        BoostingQueryBuilder favorQuery = new BoostingQueryBuilder(
+            boolQueryBuilder,
+            new MatchQueryBuilder("category", engine.profile.disfavorsString())
+        );
+        favorQuery.negativeBoost(0.5f);
 
         String[] includeFields = new String[] {"title", "category", "opening_text", "popularity_score"};
+        
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder(); // something to do with sourcing?
-        sourceBuilder.query(queryBuilder); // add the query to the source object
+        sourceBuilder.query(favorQuery); // add the query to the source object
         sourceBuilder.fetchSource(includeFields, null); // set with fields to include and exclude
         
         searchRequest.source(sourceBuilder); // add the source to the request
