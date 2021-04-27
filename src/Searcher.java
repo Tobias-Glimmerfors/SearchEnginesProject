@@ -33,12 +33,12 @@ public class Searcher {
         gson = new Gson();
         client = new RestHighLevelClient(
             RestClient.builder(new HttpHost("localhost", 9200, "http"))
-        );        
+        );
     }
 
-    public PostingsList search(String query) {
+    SearchRequest getProperQuery(String query) {
         SearchRequest searchRequest = new SearchRequest("enwikiquote"); // create the request object
-        
+
         // "basic" query
         SimpleQueryStringBuilder queryBuilder = new SimpleQueryStringBuilder(query);
         queryBuilder.field("title", 1f); // add a field to query with weight
@@ -57,42 +57,58 @@ public class Searcher {
         favorQuery.negativeBoost(0.5f);
 
         String[] includeFields = new String[] {"title", "category", "opening_text", "popularity_score"};
-        
+
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder(); // something to do with sourcing?
         sourceBuilder.query(favorQuery); // add the query to the source object
         sourceBuilder.fetchSource(includeFields, null); // set with fields to include and exclude
-        
+
         searchRequest.source(sourceBuilder); // add the source to the request
+        return searchRequest;
+    }
 
-        PostingsList res;
+    PostingsList getResults(SearchRequest searchRequest) {
+      PostingsList res;
 
-        try {
-            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT); // perform the search
-            SearchHits hits = searchResponse.getHits(); // fetch results
+      try {
+          SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT); // perform the search
+          SearchHits hits = searchResponse.getHits(); // fetch results
 
-            List<PostingsEntry> results = Arrays.stream(hits.getHits()) // transform results into a list of Pages
-                .map(hit -> {
-                    PostingsEntry e = new PostingsEntry(gson.fromJson(hit.getSourceAsString(), Page.class));
-                    e.setScore(hit.getScore());
-                    e.setID(hit.getId());
+          List<PostingsEntry> results = Arrays.stream(hits.getHits()) // transform results into a list of Pages
+              .map(hit -> {
+                  PostingsEntry e = new PostingsEntry(gson.fromJson(hit.getSourceAsString(), Page.class));
+                  e.setScore(hit.getScore());
+                  e.setID(hit.getId());
 
-                    return e;
-                })
-                .collect(Collectors.toList());
+                  return e;
+              })
+              .collect(Collectors.toList());
 
-            res = new PostingsList(results);
-        } catch (IOException e) {
-            e.printStackTrace();
-            res = new PostingsList();
-        } catch (Exception e) {
-            e.printStackTrace();
-            res = new PostingsList();
-        }
+          res = new PostingsList(results);
+      } catch (IOException e) {
+          e.printStackTrace();
+          res = new PostingsList();
+      } catch (Exception e) {
+          e.printStackTrace();
+          res = new PostingsList();
+      }
+      return res;
+    }
 
+    public PostingsList search(String query) {
+        SearchRequest searchRequest = getProperQuery(query);
+        PostingsList res = getResults(searchRequest);
         engine.profile.addQuery(query, res);
+        return res;
+    }
 
+    public PostingsList relevanceSearch(String query, PostingsList relevantDocs) {
+        SearchRequest searchRequest = getProperQuery(query);
+
+        // TODO: Add relevant document to the searchRequest
+
+        PostingsList res = getResults(searchRequest);
+        engine.profile.addQuery(query, res);
         return res;
     }
 
 }
-

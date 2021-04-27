@@ -70,6 +70,18 @@ public class SearchGUI extends JFrame {
         resultLookup = new HashMap<>();
     }
 
+    ArrayList<String> thingsToRemove(Iterator<String> it, JCheckBox[] box) {
+        ArrayList<String> retvalue = new ArrayList<>();
+        int i = 0;
+        while(it.hasNext()) {
+            String curr = it.next();
+            if (box != null && i < box.length && box[i].isSelected()) {
+                retvalue.add(curr);
+            }
+            i++;
+        }
+        return retvalue;
+    }
 
     /**
      *  Sets up the GUI and initializes
@@ -129,38 +141,56 @@ public class SearchGUI extends JFrame {
                     query = new Query( queryString );
                     // Take relevance feedback from the user into account (assignment 3)
                     // Check which documents the user has marked as relevant.
+                    PostingsList relevantPostings = new PostingsList();
                     if ( box != null ) {
-                      boolean[] relevant = new boolean[box.length];
-                      for ( int i=0; i<box.length; i++ ) {
-                        if ( box[i] != null )
-                        relevant[i] = box[i].isSelected();
-                      }
-                      query.relevanceFeedback( results, relevant, engine );
+                        for ( int i=0; i<box.length; i++ ) {
+                            if ( box[i] != null && box[i].isSelected() ) {
+                                relevantPostings.add(resultLookup.get(i));
+                            }
+                        }
                     }
                     // Search and print results. Access to the index is synchronized since
                     // we don't want to search at the same time we're indexing new files
                     // (this might corrupt the index).
                     long startTime = System.currentTimeMillis();
                     synchronized ( engine.indexLock ) {
-                    //   results = engine.searcher.search( query );
-                      results = engine.searcher.search( queryString );
+                        if (relevantPostings.size() == 0) {
+                            results = engine.searcher.search( queryString );
+                        }
+                        else {
+                            System.out.println("doing a search with relevance feedback");
+                            results = engine.searcher.relevanceSearch( queryString, relevantPostings );
+                        }
                     }
+                    System.out.println("size of results = " + results.size());
                     long elapsedTime = System.currentTimeMillis() - startTime;
                     // Display the first few results + a button to see all results.
                     //
                     // We don't want to show all results directly since the displaying itself
                     // might take a long time, if there are many results.
                     if ( results != null ) {
-                      displayResults( MAX_RESULTS, elapsedTime/1000.0 );
+                        displayResults( MAX_RESULTS, elapsedTime/1000.0 );
                     } else {
-                      displayInfoText( "Found 0 matching document(s)" );
+                        displayInfoText( "Found 0 matching document(s)" );
                     }
                 }
                 else if (currOption == Option.LIKE) {
-                    engine.profile.addFavor(queryString);
+                    for(String s : thingsToRemove(engine.profile.favorsIterator(), box)) {
+                        engine.profile.removeFavor(s);
+                    }
+                    if (queryString.length() != 0) {
+                        engine.profile.addFavor(queryString);
+                    }
+                    displayListOfWords(MAX_RESULTS, engine.profile.favorsIterator(), engine.profile.numberOfFavors());
                 }
                 else if (currOption == Option.DISLIKE) {
-                    engine.profile.addDisfavor(queryString);
+                    for(String s : thingsToRemove(engine.profile.disfavorsIterator(), box)) {
+                        engine.profile.removeDisfavor(s);
+                    }
+                    if (queryString.length() != 0) {
+                        engine.profile.addDisfavor(queryString);
+                    }
+                    displayListOfWords(MAX_RESULTS, engine.profile.disfavorsIterator(), engine.profile.numberOfDisfavors());
                 }
             }
             };
@@ -185,6 +215,7 @@ public class SearchGUI extends JFrame {
                 searchItem.setSelected( true );
                 enterLikeItem.setSelected( false );
                 enterDislikeItem.setSelected( false );
+                displayInfoText("Waiting for a search");
             }
             };
         searchItem.addActionListener( setSearch );
@@ -196,6 +227,7 @@ public class SearchGUI extends JFrame {
                 searchItem.setSelected( false );
                 enterLikeItem.setSelected( true );
                 enterDislikeItem.setSelected( false );
+                displayListOfWords(MAX_RESULTS, engine.profile.favorsIterator(), engine.profile.numberOfFavors());
             }
             };
         enterLikeItem.addActionListener( setLike );
@@ -207,6 +239,7 @@ public class SearchGUI extends JFrame {
                 searchItem.setSelected( false );
                 enterLikeItem.setSelected( false );
                 enterDislikeItem.setSelected( true );
+                displayListOfWords(MAX_RESULTS, engine.profile.disfavorsIterator(), engine.profile.numberOfDisfavors());
             }
             };
         enterDislikeItem.addActionListener( setDislike );
@@ -293,6 +326,61 @@ public class SearchGUI extends JFrame {
             Action displayAll = new AbstractAction() {
                 public void actionPerformed( ActionEvent e ) {
                     displayResults( results.size(), elapsedTime );
+                }
+            };
+            displayAllBut.addActionListener( displayAll );
+
+            resultWindow.add(actionButtons);
+        }
+        revalidate();
+        repaint();
+    };
+
+
+    void displayListOfWords( int maxResultsToDisplay, Iterator<String> words, int numberOfWords) {
+        displayInfoText("Here is a list of your preferences");
+        box = new JCheckBox[maxResultsToDisplay];
+        int i;
+        for ( i=0; i < numberOfWords && i<maxResultsToDisplay; i++ ) {
+            box[i] = new JCheckBox();
+            box[i].setSelected( false );
+
+            JPanel result = new JPanel();
+            result.setAlignmentX(Component.LEFT_ALIGNMENT);
+            result.setLayout(new BoxLayout(result, BoxLayout.X_AXIS));
+
+            JLabel label = new JLabel(words.next());
+            label.setFont( resultFont );
+
+            result.add(box[i]);
+            result.add(label);
+
+            resultWindow.add( result );
+        }
+        if ( i < numberOfWords ) {
+            JPanel actionButtons = new JPanel();
+            actionButtons.setLayout(new BoxLayout(actionButtons, BoxLayout.X_AXIS));
+            actionButtons.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+            JButton display10MoreBut = new JButton( "Display 10 more results" );
+            display10MoreBut.setFont( resultFont );
+            actionButtons.add( display10MoreBut );
+            Action display10More = new AbstractAction() {
+                public void actionPerformed( ActionEvent e ) {
+                    displayListOfWords( (int)this.getValue("resCurSize") + 10, words, numberOfWords );
+                }
+            };
+            display10More.putValue("resCurSize", i);
+            display10MoreBut.addActionListener( display10More );
+
+            actionButtons.add(Box.createRigidArea(new Dimension(5,0)));
+
+            JButton displayAllBut = new JButton( "Display all " + numberOfWords + " results" );
+            displayAllBut.setFont( resultFont );
+            actionButtons.add( displayAllBut );
+            Action displayAll = new AbstractAction() {
+                public void actionPerformed( ActionEvent e ) {
+                    displayListOfWords( numberOfWords, words, numberOfWords );
                 }
             };
             displayAllBut.addActionListener( displayAll );

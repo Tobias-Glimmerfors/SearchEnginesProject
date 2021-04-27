@@ -19,10 +19,12 @@ public class Profile {
     }
 
     public void addFavor(String s) {
+      System.out.println("adding favor: " + s);
         favors.add(s);
     }
 
     public void addDisfavor(String s) {
+        System.out.println("adding disfavor: " + s);
         disfavors.add(s);
     }
 
@@ -40,6 +42,24 @@ public class Profile {
 
     public Iterator<String> disfavorsIterator() {
         return disfavors.iterator();
+    }
+
+    public void removeFavor(String s) {
+        System.out.println("removing favor: " + s);
+        favors.remove(s);
+    }
+
+    public void removeDisfavor(String s) {
+        System.out.println("removing disfavor: " + s);
+        disfavors.remove(s);
+    }
+
+    public int numberOfFavors() {
+        return favors.size();
+    }
+
+    public int numberOfDisfavors() {
+        return disfavors.size();
     }
 
     public void addQuery(String q, PostingsList res) {
