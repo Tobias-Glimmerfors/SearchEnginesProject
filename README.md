@@ -64,6 +64,8 @@ Upload the wiki-dump to elasticsearch
 
 `chunkify.sh`
 
+`chunkify.sh` can be aborted and later restarted with `upload_docs.sh`.
+
 **Note:** Elasticsearch is configured to store data persistently in `{root}/elasticdata`, i.e., the docker containers can be closed and restarted without loss of data.
 
 Testing

@@ -1,10 +1,13 @@
-version: '3'
+version: '2'
 services:
     elasticsearch:
         image: elasticwiki
         container_name: elasticsearch
+        mem_limit: 2g
+        memswap_limit: 2g 
         environment:
             - "discovery.type=single-node"
+            - "ES_HEAP_SIZE=1g"
         volumes: 
             - ../elasticdata:/usr/share/elasticsearch/data:rw
         ports:
