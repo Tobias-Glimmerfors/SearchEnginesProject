@@ -2,3 +2,8 @@ elasticdata/
 0/
 **/.DS_Store
 **/*.gz
+target/
+.vscode/
+.project
+.classpath
+.settings/
