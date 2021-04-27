@@ -16,6 +16,7 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 public class Searcher {
     private RestHighLevelClient client;
     private Gson gson;
+    private Engine engine;
 
     class Page {
         public String title;
@@ -24,7 +25,8 @@ public class Searcher {
         public float popularity_score;
     }
 
-    public Searcher() {
+    public Searcher(Engine e) {
+        engine = e;
         gson = new Gson();
         client = new RestHighLevelClient(
             RestClient.builder(new HttpHost("localhost", 9200, "http"))
@@ -44,6 +46,8 @@ public class Searcher {
         
         searchRequest.source(sourceBuilder); // add the source to the request
 
+        PostingsList res;
+
         try {
             SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT); // perform the search
             SearchHits hits = searchResponse.getHits(); // fetch results
@@ -58,14 +62,18 @@ public class Searcher {
                 })
                 .collect(Collectors.toList());
 
-            return new PostingsList(results);
+            res = new PostingsList(results);
         } catch (IOException e) {
             e.printStackTrace();
+            res = new PostingsList();
         } catch (Exception e) {
             e.printStackTrace();
+            res = new PostingsList();
         }
 
-        return new PostingsList();
+        engine.profile.addQuery(query, res);
+
+        return res;
     }
 
 }

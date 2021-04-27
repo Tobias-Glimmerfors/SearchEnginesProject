@@ -1,3 +1,9 @@
+Running
+===
+cd into setup/ and run `docker-compose up -d` if elasticsearch is not running.
+
+cd to the project root and run `./build_and_run.sh` or `./run.sh`
+
 Examples
 ===
 ```

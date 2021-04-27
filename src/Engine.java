@@ -26,6 +26,8 @@ public class Engine {
     /** The file containing the logo. */
     String pic_file = "../ir20.png";
 
+    Profile profile;
+
     /* ----------------------------------------------- */
 
 
@@ -34,10 +36,11 @@ public class Engine {
      *   Indexes all chosen directories and files
      */
     public Engine( String[] args ) {
-        searcher = new Searcher();
+        searcher = new Searcher(this);
         gui = new SearchGUI( this );
         gui.init();
         gui.displayInfoText("Pls do stuff as you like");
+        profile = new Profile("username");
     }
 
     /* ----------------------------------------------- */
