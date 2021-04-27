@@ -1,0 +1,66 @@
+GET /_search
+{
+  "_source": false
+}
+HEAD temp_index
+DELETE temp_index
+POST /temp_index/places
+{
+  "mappings" : {
+    "country": {"type" : "text"},
+    "city": {"type" : "text"},
+    "yelpscore": {"type" : "int"},
+    "tag":{"type":"long"}
+  }
+}
+POST /temp_index/places
+{
+  "country":"Sweden",
+  "city":"Stockholm",
+  "yelpscore":5,
+  "tag":1
+}
+POST /temp_index/places
+{
+  "country":"Sweden",
+  "city":"Stockholm",
+  "tag":2
+}
+POST /temp_index/places
+{
+  "country":"this is a bit of a longer text",
+  "city":"Belgium",
+  "tag":3
+}
+
+GET /temp_index/places/_search?q=Belgium+stockholm
+
+GET /_search?pretty
+{
+    "query": {
+        "function_score": {
+          "query": { "match_all": {} },
+          "boost": "5",
+          "functions": [
+              {
+                  "filter": { "match": { "country": "sweden" } },
+                  "weight": 1
+              },
+              {
+                  "filter": { "match": { "yelpscore": 5 } },
+                  "weight": 2
+              },
+              {
+                  "filter": { "match": { "city": "belgium" } },
+                  "weight": 3
+              },
+              {
+                  "filter": { "match": { "tag": 3 } },
+                  "weight": 45
+              }
+          ],
+          "score_mode": "sum",
+          "boost_mode": "multiply"
+        }
+    }
+}
