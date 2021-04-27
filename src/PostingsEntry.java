@@ -1,3 +1,5 @@
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class PostingsEntry {
     private Searcher.Page page;
@@ -13,7 +15,7 @@ public class PostingsEntry {
     }
 
     public String getContent() {
-        return page.title;
+        return page.opening_text + "\n\nCategories: " + Arrays.stream(page.category).collect(Collectors.joining(", "));
     }
 
     public String getID() {

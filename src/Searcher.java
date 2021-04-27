@@ -20,6 +20,8 @@ public class Searcher {
     class Page {
         public String title;
         public String[] category;
+        public String opening_text;
+        public float popularity_score;
     }
 
     public Searcher() {
@@ -35,7 +37,7 @@ public class Searcher {
         SimpleQueryStringBuilder queryBuilder = new SimpleQueryStringBuilder(query); // create a query object
         queryBuilder.field("title", 1f); // add a field to query with weight
 
-        String[] includeFields = new String[] {"title", "category"};
+        String[] includeFields = new String[] {"title", "category", "opening_text", "popularity_score"};
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder(); // something to do with sourcing?
         sourceBuilder.query(queryBuilder); // add the query to the source object
         sourceBuilder.fetchSource(includeFields, null); // set with fields to include and exclude
