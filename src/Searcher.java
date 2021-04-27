@@ -13,6 +13,8 @@ import org.elasticsearch.index.query.SimpleQueryStringBuilder;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.BoostingQueryBuilder;
 import org.elasticsearch.index.query.MatchQueryBuilder;
+import org.elasticsearch.index.query.MoreLikeThisQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 
@@ -20,6 +22,10 @@ public class Searcher {
     private RestHighLevelClient client;
     private Gson gson;
     private Engine engine;
+    private final int RESULT_SIZE = 50;
+
+    // which elasticsearch index to search in
+    private String searchIndex = "enwikiquote";
 
     class Page {
         public String title;
@@ -36,9 +42,7 @@ public class Searcher {
         );
     }
 
-    SearchRequest getProperQuery(String query) {
-        SearchRequest searchRequest = new SearchRequest("enwikiquote"); // create the request object
-
+    QueryBuilder getProperQuery(String query) {
         // "basic" query
         SimpleQueryStringBuilder queryBuilder = new SimpleQueryStringBuilder(query);
         queryBuilder.field("title", 1f); // add a field to query with weight
@@ -56,11 +60,36 @@ public class Searcher {
         );
         favorQuery.negativeBoost(0.5f);
 
+        return favorQuery;        
+    }
+
+    BoolQueryBuilder getMLTQuery(QueryBuilder q, PostingsList list) {
+        BoolQueryBuilder query = new BoolQueryBuilder();
+        MoreLikeThisQueryBuilder mltQuery = new MoreLikeThisQueryBuilder(
+            new String[] {"title", "text", "category"}, // fields to compare
+            null, // custom texts to compare with fields
+            list.stream() // document IDs to compare with fields
+                .map(entry -> new MoreLikeThisQueryBuilder.Item(searchIndex, "page", entry.getID()))
+                .toArray(MoreLikeThisQueryBuilder.Item[]::new)
+        );
+
+        mltQuery.include(true); // include input docs in result
+
+        query.must(q);
+        query.should(mltQuery);
+        
+        return query;
+    }
+
+    SearchRequest getRequest(QueryBuilder query, int from) {
         String[] includeFields = new String[] {"title", "category", "opening_text", "popularity_score"};
 
+        SearchRequest searchRequest = new SearchRequest(searchIndex); // create the request object
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder(); // something to do with sourcing?
-        sourceBuilder.query(favorQuery); // add the query to the source object
+        sourceBuilder.query(query); // add the query to the source object
         sourceBuilder.fetchSource(includeFields, null); // set with fields to include and exclude
+        sourceBuilder.from(from);
+        sourceBuilder.size(RESULT_SIZE);
 
         searchRequest.source(sourceBuilder); // add the source to the request
         return searchRequest;
@@ -83,7 +112,7 @@ public class Searcher {
               })
               .collect(Collectors.toList());
 
-          res = new PostingsList(results);
+          res = new PostingsList(results, hits.totalHits);
       } catch (IOException e) {
           e.printStackTrace();
           res = new PostingsList();
@@ -94,20 +123,27 @@ public class Searcher {
       return res;
     }
 
-    public PostingsList search(String query) {
-        SearchRequest searchRequest = getProperQuery(query);
+    public PostingsList search(String q) {
+        QueryBuilder query = getProperQuery(q);
+        SearchRequest searchRequest = getRequest(query, 0);
         PostingsList res = getResults(searchRequest);
-        engine.profile.addQuery(query, res);
+        res.setQuery(query);
+        engine.profile.addQuery(q, res);
         return res;
     }
 
-    public PostingsList relevanceSearch(String query, PostingsList relevantDocs) {
-        SearchRequest searchRequest = getProperQuery(query);
-
-        // TODO: Add relevant document to the searchRequest
-
+    public PostingsList relevanceSearch(String q, PostingsList relevantDocs) {
+        QueryBuilder query = getMLTQuery(getProperQuery(q), relevantDocs);
+        SearchRequest searchRequest = getRequest(query, 0);
         PostingsList res = getResults(searchRequest);
-        engine.profile.addQuery(query, res);
+        res.setQuery(query);
+        engine.profile.addQuery(q, res);
+        return res;
+    }
+
+    public PostingsList getMoreResults(PostingsList res) {
+        SearchRequest searchRequest = getRequest(res.getQuery(), res.size());
+        res.add(getResults(searchRequest));
         return res;
     }
 

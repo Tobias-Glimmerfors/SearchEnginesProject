@@ -267,10 +267,15 @@ public class SearchGUI extends JFrame {
      *  @param elapsedTime Shows how long time it took to compute the results.
      */
     void displayResults( int maxResultsToDisplay, double elapsedTime ) {
-        displayInfoText( String.format( "Found %d matching document(s) in %.3f seconds", results.size(), elapsedTime ));
+        displayInfoText( String.format( "Found %d matching document(s) in %.3f seconds", results.numResults(), elapsedTime ));
         box = new JCheckBox[maxResultsToDisplay];
         int i;
-        for ( i=0; i<results.size() && i<maxResultsToDisplay; i++ ) {
+        for ( i=0; i<results.numResults() && i<maxResultsToDisplay; i++ ) {
+            if (i == results.size()) {
+                // trying to display more entries than have been fetched
+                engine.searcher.getMoreResults(results);
+            }
+
             resultLookup.put(i, results.get(i));
             String description = i + ". " + results.get(i).getDescription();
             description += "   " + String.format( "%.5f", results.get(i).getScore() );
@@ -302,7 +307,7 @@ public class SearchGUI extends JFrame {
             resultWindow.add( result );
         }
         // If there were many results, give the user an option to see all of them.
-        if ( i<results.size() ) {
+        if ( i<results.numResults() ) {
             JPanel actionButtons = new JPanel();
             actionButtons.setLayout(new BoxLayout(actionButtons, BoxLayout.X_AXIS));
             actionButtons.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -320,7 +325,7 @@ public class SearchGUI extends JFrame {
 
             actionButtons.add(Box.createRigidArea(new Dimension(5,0)));
 
-            JButton displayAllBut = new JButton( "Display all " + results.size() + " results" );
+            JButton displayAllBut = new JButton( "Display " + results.size() + " results" );
             displayAllBut.setFont( resultFont );
             actionButtons.add( displayAllBut );
             Action displayAll = new AbstractAction() {
