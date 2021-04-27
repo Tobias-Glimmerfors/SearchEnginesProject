@@ -13,6 +13,10 @@ public class Profile {
         user = s;
     }
 
+    public String getUser() {
+        return user;
+    }
+
     public void addFavor(String s) {
         favors.add(s);
     }

@@ -6,9 +6,6 @@
  */
 
 import java.util.*;
-import java.nio.charset.*;
-import java.io.*;
-
 
 /**
  *  A class for representing a query as a list of words, each of which has

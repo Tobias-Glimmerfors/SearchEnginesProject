@@ -5,10 +5,6 @@
  *   Johan Boye, 2017
  */
 
-import java.util.*;
-
-import java.io.*;
-
 /**
  *  This is the main class for the search engine.
  */
@@ -47,7 +43,7 @@ public class Engine {
 
 
     public static void main( String[] args ) {
-        Engine e = new Engine( args );
+        new Engine( args );
     }
 
 }
