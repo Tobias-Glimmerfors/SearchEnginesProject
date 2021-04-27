@@ -47,8 +47,13 @@ public class Searcher {
             SearchHits hits = searchResponse.getHits(); // fetch results
 
             List<PostingsEntry> results = Arrays.stream(hits.getHits()) // transform results into a list of Pages
-                .map(hit -> gson.fromJson(hit.getSourceAsString(), Page.class))
-                .map(page -> new PostingsEntry(page))
+                .map(hit -> {
+                    PostingsEntry e = new PostingsEntry(gson.fromJson(hit.getSourceAsString(), Page.class));
+                    e.setScore(hit.getScore());
+                    e.setID(hit.getId());
+
+                    return e;
+                })
                 .collect(Collectors.toList());
 
             return new PostingsList(results);

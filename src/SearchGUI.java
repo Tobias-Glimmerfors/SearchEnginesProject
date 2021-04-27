@@ -6,12 +6,13 @@
  *   Additions: Hedvig Kjellström, 2012-14
  *   Modifications: Johan Boye, 2016
  */
-package ir;
+
 
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.text.*;
+
 import javax.swing.event.*;
 import javax.swing.border.*;
 import java.util.*;
@@ -143,7 +144,8 @@ public class SearchGUI extends JFrame {
                     // (this might corrupt the index).
                     long startTime = System.currentTimeMillis();
                     synchronized ( engine.indexLock ) {
-                      results = engine.searcher.search( query );
+                    //   results = engine.searcher.search( query );
+                      results = engine.searcher.search( queryString );
                     }
                     long elapsedTime = System.currentTimeMillis() - startTime;
                     // Display the first few results + a button to see all results.
@@ -240,7 +242,7 @@ public class SearchGUI extends JFrame {
         for ( i=0; i<results.size() && i<maxResultsToDisplay; i++ ) {
             resultLookup.put(i, results.get(i));
             String description = i + ". " + results.get(i).getDescription();
-            description += "   " + String.format( "%.5f", results.get(i).score );
+            description += "   " + String.format( "%.5f", results.get(i).getScore() );
             box[i] = new JCheckBox();
             box[i].setSelected( false );
 
