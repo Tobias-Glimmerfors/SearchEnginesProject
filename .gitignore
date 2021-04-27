@@ -2,8 +2,9 @@ elasticdata/
 0/
 **/.DS_Store
 **/*.gz
-.vscode/
-.settings/
 target/
+.vscode/
 .project
 .classpath
+.settings/
+dependency-reduced-pom.xml
