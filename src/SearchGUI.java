@@ -123,11 +123,12 @@ public class SearchGUI extends JFrame {
          */
         Action search = new AbstractAction() {
             public void actionPerformed( ActionEvent e ) {
+                String queryString = queryWindow.getText().toLowerCase().trim();
+
                 if (currOption == Option.SEARCH) {
                     // Empty the results window
                     displayInfoText( " " );
                     // Turn the search string into a Query
-                    String queryString = queryWindow.getText().toLowerCase().trim();
                     query = new Query( queryString );
                     // Take relevance feedback from the user into account (assignment 3)
                     // Check which documents the user has marked as relevant.
@@ -159,10 +160,10 @@ public class SearchGUI extends JFrame {
                     }
                 }
                 else if (currOption == Option.LIKE) {
-                    System.out.println("TODO: enter like item into preferences");
+                    engine.profile.addFavor(queryString);
                 }
                 else if (currOption == Option.DISLIKE) {
-                    System.out.println("TODO: enter dislike item into preferences");
+                    engine.profile.addDisfavor(queryString);
                 }
             }
             };
