@@ -46,12 +46,22 @@ public class Searcher {
         // "basic" query
         SimpleQueryStringBuilder queryBuilder = new SimpleQueryStringBuilder(query);
         queryBuilder.field("title", 1f); // add a field to query with weight
-        queryBuilder.field("text", 1f); // add a field to query with weight
+        queryBuilder.field("text", 1f);
+        queryBuilder.field("category", 1f);
 
         // combine query with favored categories
         BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
         boolQueryBuilder.must(queryBuilder);
         boolQueryBuilder.should(new MatchQueryBuilder("category", engine.profile.favorsString()));
+
+        for (int i = 0; i < engine.profile.prevQueriesSize(); i++) {
+            SimpleQueryStringBuilder historyQueryBuilder = new SimpleQueryStringBuilder(engine.profile.getPrevQuery(i).getQuery());
+            historyQueryBuilder.field("title", 1f);
+            historyQueryBuilder.field("text", 1f);
+            historyQueryBuilder.field("category", 1f);
+            historyQueryBuilder.boost(1f / (engine.profile.prevQueriesSize() - i + 1));
+            boolQueryBuilder.should(historyQueryBuilder);
+        }
 
         // boost the searched and preferred queries while demote disfavored categories
         BoostingQueryBuilder favorQuery = new BoostingQueryBuilder(

@@ -9,6 +9,23 @@ public class Profile {
     private List<String> favors = new ArrayList<String>();
     private List<String> disfavors = new ArrayList<String>();
     private HashMap<String, List<String>> prevQueries = new HashMap<String, List<String>>();
+    private ArrayList<Query> prevQueries_ = new ArrayList<Query>();
+
+    class Query {
+        // TODO: use relevanceFeedback IDs instead of result IDs
+
+        private String query;
+        private List<String> IDs;
+
+        public Query(String q, List<String> resIDs) {
+            query = q;
+            IDs = resIDs;
+        }
+
+        public String getQuery() {
+            return query;
+        }
+    }
 
     public Profile(String s) {
         user = s;
@@ -68,6 +85,15 @@ public class Profile {
             IDs.add(e.getID());
         }
 
+        prevQueries_.add(new Query(q, IDs));
         prevQueries.put(q, IDs);
+    }
+
+    public int prevQueriesSize() {
+        return prevQueries_.size();
+    }
+
+    public Query getPrevQuery(int i) {
+        return prevQueries_.get(i);
     }
 }
