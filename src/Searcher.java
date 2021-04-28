@@ -62,7 +62,7 @@ public class Searcher {
             a_inverse += 1f / ((float) (i + 2));
         }
 
-        a_inverse = 0.5f * a_inverse; // equal weighting for relevance/clicked and history
+        a_inverse = 0.9f * a_inverse; // equal weighting for relevance/clicked and history
 
         for (int i = 0; i < engine.profile.prevQueriesSize(); i++) {
             SimpleQueryStringBuilder historyQueryBuilder = new SimpleQueryStringBuilder(engine.profile.getPrevQuery(i).getQuery());
@@ -87,7 +87,7 @@ public class Searcher {
                 .toArray(new MoreLikeThisQueryBuilder.Item[0])
             );
             mltQueryBuilder.include(true);
-            mltQueryBuilder.boost(0.5f); // equal weighting for history and relevance/clicked
+            mltQueryBuilder.boost(0.1f); // equal weighting for history and relevance/clicked
             boolQueryBuilder.should(mltQueryBuilder);
         }
 
