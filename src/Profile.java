@@ -8,8 +8,7 @@ public class Profile {
     private String user;
     private List<String> favors = new ArrayList<String>();
     private List<String> disfavors = new ArrayList<String>();
-    private HashMap<String, List<String>> prevQueries = new HashMap<String, List<String>>();
-    private ArrayList<Query> prevQueries_ = new ArrayList<Query>();
+    private ArrayList<Query> prevQueries = new ArrayList<Query>();
 
     class Query {
         // TODO: use relevanceFeedback IDs instead of result IDs
@@ -81,19 +80,19 @@ public class Profile {
 
     public void addQuery(String q, PostingsList res) {
         ArrayList<String> IDs = new ArrayList<String>();
-        for (PostingsEntry e : res) {
-            IDs.add(e.getID());
-        }
+        // TODO: add relevanceFeedback docs to query IDs
+        // for (PostingsEntry e : res) {
+        //     IDs.add(e.getID());
+        // }
 
-        prevQueries_.add(new Query(q, IDs));
-        prevQueries.put(q, IDs);
+        prevQueries.add(new Query(q, IDs));
     }
 
     public int prevQueriesSize() {
-        return prevQueries_.size();
+        return prevQueries.size();
     }
 
     public Query getPrevQuery(int i) {
-        return prevQueries_.get(i);
+        return prevQueries.get(i);
     }
 }

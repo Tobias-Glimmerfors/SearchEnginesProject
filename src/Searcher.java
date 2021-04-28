@@ -25,7 +25,7 @@ public class Searcher {
     private final int RESULT_SIZE = 50;
 
     // which elasticsearch index to search in
-    private String searchIndex = "enwikiquote";
+    private final String SEARCH_INDEX = "enwikiquote";
 
     class Page {
         public String title;
@@ -38,7 +38,7 @@ public class Searcher {
         engine = e;
         gson = new Gson();
         client = new RestHighLevelClient(
-            RestClient.builder(new HttpHost("localhost", 9200, "http"))
+            RestClient.builder(new HttpHost(engine.ELASTIC_HOST, engine.ELASTIC_PORT, engine.ELASTIC_PROTOCOL))
         );
     }
 
@@ -86,7 +86,7 @@ public class Searcher {
             new String[] {"title", "text", "category"}, // fields to compare
             null, // custom texts to compare with fields
             list.stream() // document IDs to compare with fields
-                .map(entry -> new MoreLikeThisQueryBuilder.Item(searchIndex, "page", entry.getID()))
+                .map(entry -> new MoreLikeThisQueryBuilder.Item(SEARCH_INDEX, "page", entry.getID()))
                 .toArray(MoreLikeThisQueryBuilder.Item[]::new)
         );
 
@@ -101,7 +101,7 @@ public class Searcher {
     SearchRequest getRequest(QueryBuilder query, int from) {
         String[] includeFields = new String[] {"title", "category", "opening_text", "popularity_score"};
 
-        SearchRequest searchRequest = new SearchRequest(searchIndex); // create the request object
+        SearchRequest searchRequest = new SearchRequest(SEARCH_INDEX); // create the request object
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder(); // something to do with sourcing?
         sourceBuilder.query(query); // add the query to the source object
         sourceBuilder.fetchSource(includeFields, null); // set with fields to include and exclude
@@ -129,7 +129,7 @@ public class Searcher {
               })
               .collect(Collectors.toList());
 
-          res = new PostingsList(results, hits.totalHits);
+          res = new PostingsList(results, hits.getTotalHits());
       } catch (IOException e) {
           e.printStackTrace();
           res = new PostingsList();
@@ -146,6 +146,7 @@ public class Searcher {
         PostingsList res = getResults(searchRequest);
         res.setQuery(query);
         engine.profile.addQuery(q, res);
+
         return res;
     }
 
