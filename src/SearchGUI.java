@@ -44,8 +44,8 @@ public class SearchGUI extends JFrame {
     public JPanel resultWindow = new JPanel();
     private JScrollPane resultPane = new JScrollPane( resultWindow );
     public JTextField queryWindow = new JTextField( "", 28 );
-    // public JTextArea docTextView = new JTextArea( "", 15, 28 );
-    public JTextPane docTextView = new JTextPane();
+    public JTextArea docTextView = new JTextArea( "", 15, 28 );
+    // public JTextPane docTextView = new JTextPane();
     private JScrollPane docViewPane = new JScrollPane( docTextView );
     
     private Font queryFont = new Font( "Arial", Font.BOLD, 24 );
@@ -120,12 +120,12 @@ public class SearchGUI extends JFrame {
         p.add( p3 );
         p.add( resultPane );
 
-        docViewPane.setPreferredSize(new Dimension(400, 200));
-        docTextView.setContentType("text/html");
+        // docViewPane.setPreferredSize(new Dimension(400, 200));
+        // docTextView.setContentType("text/html");
         docTextView.setFont(resultFont);
         docTextView.setText("\n  The contents of the document will appear here.");
-        // docTextView.setLineWrap(true);
-        // docTextView.setWrapStyleWord(true);
+        docTextView.setLineWrap(true);
+        docTextView.setWrapStyleWord(true);
         p.add(docViewPane);
         setVisible( true );
 

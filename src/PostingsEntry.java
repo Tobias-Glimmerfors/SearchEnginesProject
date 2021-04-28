@@ -9,7 +9,7 @@ public class PostingsEntry {
     private Searcher.Page page;
     private float score = 0f;
     private String ID;
-    private List<String> highlights = new ArrayList<String>();
+    // private List<String> highlights = new ArrayList<String>();
 
     public PostingsEntry(Searcher.Page p) {
         page = p;
@@ -27,13 +27,13 @@ public class PostingsEntry {
             e.printStackTrace();
         }
 
-        String highlightedSentences = highlights.stream().map(h -> "\"" + h + "\"").collect(Collectors.joining("\n"));
+        // String highlightedSentences = highlights.stream().map(h -> "\"" + h + "\"").collect(Collectors.joining("\n"));
 
-        String url = "<a href='http://en.wikiquote.org/wiki/" + endpoint + "'>" + page.title + "</a>";
+        String url = "http://en.wikiquote.org/wiki/" + endpoint;
         String categories = Arrays.stream(page.category).collect(Collectors.joining(", "));
-        String content = "\n" + url + "\n\n" + page.opening_text + "\n\nHighlights:\n" + highlightedSentences + "\n\nCategories: " + categories;
+        String content = "\n" + url + "\n\n" + page.opening_text + "\n\nCategories: " + categories;
 
-        return content.replace("\n", "<br/>");
+        return content;
     }
 
     public String getID() {

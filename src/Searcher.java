@@ -109,12 +109,12 @@ public class Searcher {
         sourceBuilder.from(from);
         sourceBuilder.size(RESULT_SIZE);
         
-        HighlightBuilder highlighter = new HighlightBuilder();
-        highlighter.field("text");
-        highlighter.preTags("<strong>");
-        highlighter.postTags("</strong>");
+        // HighlightBuilder highlighter = new HighlightBuilder();
+        // highlighter.field("text");
+        // highlighter.preTags("<strong>");
+        // highlighter.postTags("</strong>");
 
-        sourceBuilder.highlighter(highlighter);
+        // sourceBuilder.highlighter(highlighter);
 
         searchRequest.source(sourceBuilder); // add the source to the request
         return searchRequest;
@@ -132,14 +132,14 @@ public class Searcher {
                   PostingsEntry e = new PostingsEntry(gson.fromJson(hit.getSourceAsString(), Page.class));
                   e.setScore(hit.getScore());
                   e.setID(hit.getId());
-                  List<String> highlights = hit.getHighlightFields()
-                    .values()
-                    .stream()
-                    .flatMap(field -> Arrays.asList(field.fragments())
-                    .stream()
-                    .map(fragment -> fragment.string()))
-                    .collect(Collectors.toList());
-                  e.setHighlights(highlights);
+                //   List<String> highlights = hit.getHighlightFields()
+                //     .values()
+                //     .stream()
+                //     .flatMap(field -> Arrays.asList(field.fragments())
+                //     .stream()
+                //     .map(fragment -> fragment.string()))
+                //     .collect(Collectors.toList());
+                //   e.setHighlights(highlights);
 
                   return e;
               })
