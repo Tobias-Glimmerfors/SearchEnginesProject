@@ -78,12 +78,16 @@ public class Profile {
         return disfavors.size();
     }
 
+    public void addQuery(String q) {
+        addQuery(q, new PostingsList());
+    }
+
     public void addQuery(String q, PostingsList res) {
         ArrayList<String> IDs = new ArrayList<String>();
-        // TODO: add relevanceFeedback docs to query IDs
-        // for (PostingsEntry e : res) {
-        //     IDs.add(e.getID());
-        // }
+        
+        for (PostingsEntry e : res) {
+            IDs.add(e.getID());
+        }
 
         prevQueries.add(new Query(q, IDs));
     }

@@ -17,6 +17,7 @@ import org.elasticsearch.index.query.MoreLikeThisQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 
 public class Searcher {
     private RestHighLevelClient client;
@@ -107,6 +108,13 @@ public class Searcher {
         sourceBuilder.fetchSource(includeFields, null); // set with fields to include and exclude
         sourceBuilder.from(from);
         sourceBuilder.size(RESULT_SIZE);
+        
+        HighlightBuilder highlighter = new HighlightBuilder();
+        highlighter.field("text");
+        highlighter.preTags("<strong>");
+        highlighter.postTags("</strong>");
+
+        sourceBuilder.highlighter(highlighter);
 
         searchRequest.source(sourceBuilder); // add the source to the request
         return searchRequest;
@@ -124,6 +132,14 @@ public class Searcher {
                   PostingsEntry e = new PostingsEntry(gson.fromJson(hit.getSourceAsString(), Page.class));
                   e.setScore(hit.getScore());
                   e.setID(hit.getId());
+                  List<String> highlights = hit.getHighlightFields()
+                    .values()
+                    .stream()
+                    .flatMap(field -> Arrays.asList(field.fragments())
+                    .stream()
+                    .map(fragment -> fragment.string()))
+                    .collect(Collectors.toList());
+                  e.setHighlights(highlights);
 
                   return e;
               })
@@ -145,7 +161,7 @@ public class Searcher {
         SearchRequest searchRequest = getRequest(query, 0);
         PostingsList res = getResults(searchRequest);
         res.setQuery(query);
-        engine.profile.addQuery(q, res);
+        engine.profile.addQuery(q);
 
         return res;
     }
@@ -155,7 +171,7 @@ public class Searcher {
         SearchRequest searchRequest = getRequest(query, 0);
         PostingsList res = getResults(searchRequest);
         res.setQuery(query);
-        engine.profile.addQuery(q, res);
+        engine.profile.addQuery(q, relevantDocs);
         return res;
     }
 
