@@ -25,7 +25,7 @@ public class SearchGUI extends JFrame {
     Engine engine;
 
     /**  The query posed by the user. */
-    private Query query;
+    private String query;
 
     /**  The results of a search query. */
     private PostingsList results;
@@ -135,13 +135,10 @@ public class SearchGUI extends JFrame {
          */
         Action search = new AbstractAction() {
             public void actionPerformed( ActionEvent e ) {
-                String queryString = queryWindow.getText().toLowerCase().trim();
-
+                query = queryWindow.getText().toLowerCase().trim();
                 if (currOption == Option.SEARCH) {
                     // Empty the results window
                     displayInfoText( " " );
-                    // Turn the search string into a Query
-                    query = new Query( queryString );
                     // Take relevance feedback from the user into account (assignment 3)
                     // Check which documents the user has marked as relevant.
                     PostingsList relevantPostings = new PostingsList();
@@ -158,11 +155,11 @@ public class SearchGUI extends JFrame {
                     long startTime = System.currentTimeMillis();
                     synchronized ( engine.indexLock ) {
                         if (relevantPostings.size() == 0) {
-                            results = engine.searcher.search( queryString );
+                            results = engine.searcher.search( query );
                         }
                         else {
                             System.out.println("doing a search with relevance feedback");
-                            results = engine.searcher.relevanceSearch( queryString, relevantPostings );
+                            results = engine.searcher.relevanceSearch( query, relevantPostings );
                         }
                     }
                     System.out.println("size of results = " + results.size());
@@ -181,8 +178,8 @@ public class SearchGUI extends JFrame {
                     for(String s : thingsToRemove(engine.profile.favorsIterator(), box)) {
                         engine.profile.removeFavor(s);
                     }
-                    if (queryString.length() != 0) {
-                        engine.profile.addFavor(queryString);
+                    if (query.length() != 0) {
+                        engine.profile.addFavor(query);
                     }
                     displayListOfWords(MAX_RESULTS, engine.profile.favorsIterator(), engine.profile.numberOfFavors());
                 }
@@ -190,8 +187,8 @@ public class SearchGUI extends JFrame {
                     for(String s : thingsToRemove(engine.profile.disfavorsIterator(), box)) {
                         engine.profile.removeDisfavor(s);
                     }
-                    if (queryString.length() != 0) {
-                        engine.profile.addDisfavor(queryString);
+                    if (query.length() != 0) {
+                        engine.profile.addDisfavor(query);
                     }
                     displayListOfWords(MAX_RESULTS, engine.profile.disfavorsIterator(), engine.profile.numberOfDisfavors());
                 }
@@ -301,6 +298,7 @@ public class SearchGUI extends JFrame {
 
                     docTextView.setText(content);
                     docTextView.setCaretPosition(0);
+                    engine.profile.addClickedEntry(query, resultToShow);
                 }
             };
             label.addMouseListener(showDocument);

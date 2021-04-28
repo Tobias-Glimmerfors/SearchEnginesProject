@@ -52,11 +52,11 @@ public class PostingsEntry {
         score = s;
     }
 
-    public List<String> getHighlights() {
-        return highlights;
-    }
+    // public List<String> getHighlights() {
+    //     return highlights;
+    // }
 
-    public void setHighlights(List<String> l) {
-        highlights = l;
-    }
+    // public void setHighlights(List<String> l) {
+    //     highlights = l;
+    // }
 }

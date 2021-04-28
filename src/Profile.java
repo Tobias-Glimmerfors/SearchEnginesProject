@@ -1,8 +1,10 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Profile {
     private String user;
@@ -23,6 +25,18 @@ public class Profile {
 
         public String getQuery() {
             return query;
+        }
+
+        public int size() {
+            return IDs.size();
+        }
+
+        public String get(int i) {
+            return IDs.get(i);
+        }
+
+        public Stream<String> getStream() {
+            return IDs.stream();
         }
     }
 
@@ -85,11 +99,42 @@ public class Profile {
     public void addQuery(String q, PostingsList res) {
         ArrayList<String> IDs = new ArrayList<String>();
         
-        for (PostingsEntry e : res) {
-            IDs.add(e.getID());
+        boolean addedEntry = false;
+
+        for (Query query : prevQueries) {
+            if (query.query.equals(q)) {
+                for (PostingsEntry e : res) {
+                    query.IDs.add(e.getID());
+                }
+
+                addedEntry = true;
+                break;
+            }
         }
 
-        prevQueries.add(new Query(q, IDs));
+        if (!addedEntry) {
+            for (PostingsEntry e : res) {
+                IDs.add(e.getID());
+            }
+
+            prevQueries.add(new Query(q, IDs));
+        }
+    }
+
+    public void addClickedEntry(String q, PostingsEntry e) {
+        boolean addedEntry = false;
+
+        for (Query query : prevQueries) {
+            if (query.query.equals(q)) {
+                query.IDs.add(e.getID());
+                addedEntry = true;
+                break;
+            }
+        }
+
+        if (!addedEntry) {
+            prevQueries.add(new Query(q, new ArrayList<String>(Arrays.asList(e.getID()))));
+        }
     }
 
     public int prevQueriesSize() {
@@ -98,5 +143,9 @@ public class Profile {
 
     public Query getPrevQuery(int i) {
         return prevQueries.get(i);
+    }
+
+    public Stream<Query> getPrevQueryStream() {
+        return prevQueries.stream();
     }
 }

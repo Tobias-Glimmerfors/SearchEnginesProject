@@ -97,17 +97,16 @@ public class Engine {
             
             if (hits.getTotalHits() > 0) {
                 profile = gson.fromJson(hits.getAt(0).getSourceAsString(), Profile.class);
+                gui.displayInfoText("Profile loaded");
+            } else {
+                gui.displayInfoText("New profile created");
             }
-
-            System.out.println("Profile loaded");
-            gui.displayInfoText("Profile loaded");
+            
         } catch (IOException e) {
             e.printStackTrace();
-            System.out.println("Could not load profile");
             gui.displayInfoText("New profile created");
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("Could not load profile");
             gui.displayInfoText("New profile created");
         }
 

@@ -55,11 +55,14 @@ public class Searcher {
         boolQueryBuilder.must(queryBuilder);
         boolQueryBuilder.should(new MatchQueryBuilder("category", engine.profile.favorsString()));
 
+        // add history where the sum of boosts is 1
         float a_inverse = 0f;
 
         for (int i = 0; i < engine.profile.prevQueriesSize(); i++) {
             a_inverse += 1f / ((float) (i + 2));
         }
+
+        a_inverse = 0.5f * a_inverse; // equal weighting for relevance/clicked and history
 
         for (int i = 0; i < engine.profile.prevQueriesSize(); i++) {
             SimpleQueryStringBuilder historyQueryBuilder = new SimpleQueryStringBuilder(engine.profile.getPrevQuery(i).getQuery());
@@ -69,6 +72,23 @@ public class Searcher {
 
             historyQueryBuilder.boost((1f / a_inverse) / ((float) (engine.profile.prevQueriesSize() - i + 1)));
             boolQueryBuilder.should(historyQueryBuilder);
+        }
+
+        // if there are clicked/relevant docs
+        if (engine.profile.getPrevQueryStream().map(q -> q.size()).mapToInt(Integer::intValue).sum() > 0) {
+            // add relevant and clicked documents
+            MoreLikeThisQueryBuilder mltQueryBuilder = new MoreLikeThisQueryBuilder(
+                new String[] {"title", "text", "category"}, // fields to compare
+                null, 
+                engine.profile.getPrevQueryStream() // convert every clicked and relevant ID to an array of MLT items
+                .flatMap(q -> q.getStream())
+                .map(s -> new MoreLikeThisQueryBuilder.Item(SEARCH_INDEX, "page", s))
+                .collect(Collectors.toList())
+                .toArray(new MoreLikeThisQueryBuilder.Item[0])
+            );
+            mltQueryBuilder.include(true);
+            mltQueryBuilder.boost(0.5f); // equal weighting for history and relevance/clicked
+            boolQueryBuilder.should(mltQueryBuilder);
         }
 
         // boost the searched and preferred queries while demote disfavored categories
