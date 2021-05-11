@@ -53,7 +53,7 @@ Download a wikipedia dump (we recommend enwikiquote as it is substantially small
 
 Update `chunkify.sh`
 - Set the `dump` variable to your wikipedia filename
-- Set the `index` variable, e.g., enwikiquote or enwiki
+- Set the `index` variable (currently requires "enwikiquote")
 
 Update `build_index.sh`
 - Set the `index` variable to the same as in `chunkify.sh` in the step above
