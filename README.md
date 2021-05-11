@@ -72,6 +72,16 @@ Upload the wiki-dump to elasticsearch
 
 `chunkify.sh` can be aborted and later restarted with `upload_docs.sh`.
 
+Cd back to the root directory
+
+`cd ..`
+
+Build and run the search engine
+
+`./build_and_run.sh`
+
+Setup is now complete! `run.sh` can be used to skip the build step of the launch.
+
 **Note:** Elasticsearch is configured to store data persistently in `{root}/elasticdata`, i.e., the docker containers can be closed and restarted without loss of data.
 
 Testing
