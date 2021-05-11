@@ -49,7 +49,7 @@ Install jq (JSON processor)
 
 `brew install jq` or `apt-get install jq`
 
-Download a wikipedia dump from https://dumps.wikimedia.org/other/cirrussearch/ and place the file in the setup/ directory.
+Download a wikipedia dump (we recommend enwikiquote as it is substantially smaller in size than the full wiki) from https://dumps.wikimedia.org/other/cirrussearch/ and place the file in the setup/ directory.
 
 Update `chunkify.sh`
 - Set the `dump` variable to your wikipedia filename
